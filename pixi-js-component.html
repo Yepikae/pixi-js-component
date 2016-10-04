@@ -1,0 +1,397 @@
+<link rel="import" href="../iron-resizable-behavior/iron-resizable-behavior.html">
+<script src="../pixi-js/bin/pixi.min.js"></script>
+
+<dom-module id="pixi-js-component">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+
+    <div id="view"></div>
+
+  </template>
+  <script>
+    Polymer({
+      is: 'pixi-js-component',
+
+      properties: {
+
+        /**
+         * If true, initialize the `_renderer` as soone as attached.
+         * Otherwise, do nothing.
+         *
+         * @attribute autoStart
+         * @type Boolean
+         */
+        autoStart: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * Width (in pixel) of the renderer.
+         *
+         * @attribute width
+         * @type Number
+         */
+        width: {
+          type: Number,
+          notify: true,
+          value: 500
+        },
+
+        /**
+         * Height (in pixel) of the renderer.
+         *
+         * @attribute height
+         * @type Number
+         */
+        height: {
+          type: Number,
+          notify: true,
+          value: 500
+        },
+
+        /**
+         * Background color of the renderer (in hexadecimal number).
+         *
+         * @attribute backgroundColor
+         * @type Number
+         */
+        backgroundColor: {
+          type: Number,
+          notify: true,
+          value: 0x000000
+        },
+
+        /**
+         * True, uses an OpenGL renderer.
+         * False, uses a simple canvas.
+         *
+         * @attribute openGl
+         * @type Boolean
+         */
+        openGl: {
+          type: Boolean,
+          notify: true,
+          value: false
+        },
+
+        /**
+         * True if the `_renderer` should strech with the pixi-js-component width.
+         *
+         * @attribute flexWidth
+         * @type Boolean
+         */
+        flexWidth: {
+          type: Boolean,
+          notify: true,
+          value: false,
+          observer: '_defineAutoStrechBehavior'
+        },
+
+        /**
+         * True if the `_renderer` should strech with the pixi-js-component height.
+         *
+         * @attribute flexHeight
+         * @type Boolean
+         */
+        flexHeight: {
+          type: Boolean,
+          notify: true,
+          value: false,
+          observer: '_defineAutoStrechBehavior'
+        },
+
+        /**
+         * The main PIXI.Renderer.
+         *
+         * @attribute _renderer
+         * @type Object
+         */
+        _renderer: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return {};
+          }
+        },
+
+        /**
+         * The main PIXI.Container.
+         *
+         * @attribute _stage
+         * @type Object
+         */
+        _stage: {
+          type: Object,
+          notify: true,
+          value: function() {
+            return {};
+          }
+        }
+      },
+
+      behaviors: [Polymer.IronResizableBehavior],
+
+      ready: function() {},
+
+      attached: function() {
+        // If we start as soon as attached.
+        if (this.autoStart) {
+          // Create a renderer instance.
+          if (this.openGl)
+            this.set('_renderer', PIXI.autoDetectRenderer(this.width, this.height, {
+              backgroundColor: this.backgroundColor
+            }));
+          else
+            this.set('_renderer', PIXI.CanvasRenderer(this.width, this.height, {
+              backgroundColor: this.backgroundColor
+            }));
+          // Append the _renderer to our div
+          this.$.view.appendChild(this._renderer.view);
+          // create the root of the scene graph
+          this.set('_stage', new PIXI.Container());
+          // Animate the s*%! out of it!
+          this._animate();
+        }
+      },
+
+      /**
+       * Initialize the `_renderer` and launch `_animate`.
+       *
+       * @param {!optionnal} config {Object} PIXI.Renderer configuration options..
+       *
+       * @method init
+       */
+      init: function(config) {
+        // If there no config, we juste set the background color.
+        config = config || {
+          backgroundColor: this.backgroundColor
+        };
+        // Resize if flex is true.
+        if (this.flexWidth) {
+          this.set('width', this.clientWidth);
+        }
+        if (this.flexHeight) {
+          this.set('height', this.clientHeight);
+        }
+        // Create a renderer instance.
+        if (this.openGl)
+          this.set('_renderer', PIXI.autoDetectRenderer(this.width, this.height, config));
+        else
+          this.set('_renderer', PIXI.autoDetectRenderer(this.width, this.height, config));
+        // Append the _renderer to our div
+        this.$.view.appendChild(this._renderer.view);
+        // create the root of the scene graph
+        this.set('_stage', new PIXI.Container());
+        // Animate the s*%! out of it!
+        this._animate();
+      },
+
+      /**
+       * Renders the `_stage` and calls `_animate`.
+       *
+       * @method _animate
+       */
+      _animate: function() {
+        requestAnimationFrame(this._animate.bind(this));
+        // render the container
+        this._renderer.render(this._stage);
+      },
+
+      /**
+       * Make the pixi-js-component listen to `iron-resize` if `flexWidth` or `flexHeight` are true.
+       * Disable the event listener otherwise.
+       *
+       * @method _defineAutoStrechBehavior
+       */
+      _defineAutoStrechBehavior: function() {
+        if (this.flexWidth || this.flexHeight)
+          this.listen(this, 'iron-resize', '_resizeRenderer');
+        else
+          this.unlisten(this, 'iron-resize', '_resizeRenderer');
+      },
+
+      /**
+       * Resize the `_renderer`.
+       *
+       * @method _resizeRenderer
+       */
+      _resizeRenderer: function(evt) {
+        if (this._renderer.view) {
+          // Delay the resizing function. Because the event firing is so sloooow.
+          this.async(function(evt) {
+            // Resize if flex is true.
+            if (this.flexWidth) {
+              this._renderer.view.width = evt.target.clientWidth;
+            }
+            if (this.flexHeight) {
+              this._renderer.view.height = evt.target.clientHeight;
+            }
+            // Resize the entire _renderer
+            this._renderer.resize(this._renderer.view.width, this._renderer.view.height);
+          }.bind(this, evt), 500);
+        }
+      },
+
+      /** GRAPHIC FUNCTIONS **/
+
+      /**
+       * Add a graphic element to the `_stage`.
+       *
+       * @param {!required} graphic {Object} PIXI.Graphic object to add to the `_stage`.
+       *
+       * @method addToStage
+       */
+      addToStage: function(graphic) {
+        this._stage.addChild(graphic);
+      },
+
+      /**
+       * Remove every graphic element from the `_stage`.
+       *
+       * @method clearStage
+       */
+      clearStage: function() {
+        this._stage.removeChildren();
+      },
+
+      /**
+       * Remove any child of the stage.
+       *
+       * @param {!required} child {String} A child of the stage.
+       *
+       * @method removeChildFromStage
+       */
+      removeChildFromStage: function(child) {
+        this._stage.removeChild(child);
+      },
+
+      /**
+       * Add a graphic element to another.
+       *
+       * @param {!required} parent {Object} PIXI.Graphic object parent.
+       *
+       * @param {!required} child {Object} PIXI.Graphic object child.
+       *
+       * @method addToGraphic
+       */
+      addToGraphic: function(parent, child) {
+        parent.addChild(child);
+      },
+
+      /**
+       * Create a new PIXI.Container.
+       *
+       * @method createContainer
+       */
+      createContainer: function() {
+        return new PIXI.Container();
+      },
+
+      /**
+       * Returns a Pixi.Graphics rectangle.
+       *
+       * @param {!required} x (Number) The x-axis position of the rectangle.
+       * @param {!required} y (Number) The y-axis position of the rectangle.
+       * @param {!required} width (Number) The width of the rectangle.
+       * @param {!required} height (Number) The height of the rectangle.
+       * @param {!required} color (HexColor) The color of the rectangle.
+       *
+       * @method createRectangleFill
+       */
+      createRectangleFill: function(x, y, width, height, color) {
+        var graphics = new PIXI.Graphics();
+        graphics.beginFill(color);
+        graphics.drawRect(x, y, width, height);
+        return graphics;
+      },
+
+      /**
+       * Returns a Pixi.Graphics diamond.
+       *
+       * @param {!required} x (Number) The x-axis position of the diamond.
+       * @param {!required} y (Number) The y-axis position of the diamond.
+       * @param {!required} width (Number) The width of the diamond.
+       * @param {!required} height (Number) The height of the diamond.
+       * @param {!required} color (HexColor) The color of the diamond.
+       *
+       * @method createDiamondFill
+       */
+      createDiamondFill: function(x, y, width, height, color) {
+        var graphics = new PIXI.Graphics();
+        graphics.beginFill(color);
+        graphics.drawPolygon([
+          new PIXI.Point(x + (width / 2), y),
+          new PIXI.Point(x + width, y + (height / 2)),
+          new PIXI.Point(x + (width / 2), y + height),
+          new PIXI.Point(x, y + (height / 2)),
+        ]);
+        return graphics;
+      },
+
+      /**
+       * Returns a Pixi.Graphics star.
+       *
+       * @param {!required} x (Number) The x-axis position of the diamond.
+       * @param {!required} y (Number) The y-axis position of the diamond.
+       * @param {!required} width (Number) The width (& height) of the diamond.
+       * @param {!required} color (HexColor) The color of the diamond.
+       *
+       * @method createStarFill
+       */
+      createStarFill: function(x, y, width, color) {
+        var graphics = new PIXI.Graphics();
+        graphics.beginFill(color);
+        graphics.drawPolygon([
+          new PIXI.Point(x + (width / 2), y),
+          new PIXI.Point(x + (2 * width / 3), y + (width / 3)),
+          new PIXI.Point(x + width, y + (width / 2)),
+          new PIXI.Point(x + (2 * width / 3), y + (2 * width / 3)),
+          new PIXI.Point(x + (width / 2), y + width),
+          new PIXI.Point(x + (width / 3), y + (2 * width / 3)),
+          new PIXI.Point(x, y + (width / 2)),
+          new PIXI.Point(x + (width / 3), y + (width / 3)),
+        ]);
+        return graphics;
+      },
+
+      /**
+       * Returns a Pixi.Graphics rectangle.
+       *
+       * @param {!required} x (Number) The x-axis position of the rectangle.
+       * @param {!required} y (Number) The y-axis position of the rectangle.
+       * @param {!required} width (Number) The width of the rectangle.
+       * @param {!required} height (Number) The height of the rectangle.
+       * @param {!required} color (HexColor) The color of the rectangle.
+       *
+       * @method createRectangle
+       */
+      createCircleFill: function(x, y, radius, color) {
+        var graphics = new PIXI.Graphics();
+        graphics.beginFill(color);
+        graphics.drawCircle(x, y, radius);
+        return graphics;
+      },
+
+      /**
+       * Set the parameters of an element.
+       *
+       * @param {!required} element (Object) The element to set.
+       * @param {!required} parameters (Object) The parameters to use.
+       *
+       * @method setParameters
+       */
+      setParameters: function(element, parameters) {
+        for (var p in parameters) {
+          element[p] = parameters[p];
+        }
+      }
+
+    });
+  </script>
+</dom-module>
