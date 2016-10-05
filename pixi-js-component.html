@@ -183,7 +183,7 @@
         if (this.openGl)
           this.set('_renderer', PIXI.autoDetectRenderer(this.width, this.height, config));
         else
-          this.set('_renderer', PIXI.autoDetectRenderer(this.width, this.height, config));
+          this.set('_renderer', new PIXI.CanvasRenderer(this.width, this.height, config));
         // Append the _renderer to our div
         this.$.view.appendChild(this._renderer.view);
         // create the root of the scene graph
