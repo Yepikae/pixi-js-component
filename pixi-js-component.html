@@ -160,6 +160,78 @@
         }
       },
 
+      GraphicIC: function() {
+        // The container of the graphics
+        this.c = new PIXI.Container();
+        // The graphics itself
+        this.g = new PIXI.Graphics();
+        // Add the graphics to the container
+        this.c.addChild(this.g);
+        /*
+         *
+         *
+         */
+        this.scale = function(value) {
+          var currentCenter = {
+            x: this.g.position.x + this.g.width / 2,
+            y: this.g.position.y + this.g.width / 2
+          };
+          this.g.scale.x += value;
+          this.g.scale.y += value;
+          this.g.position.set(currentCenter.x - (this.g.width / 2), currentCenter.y - (this.g.height / 2));
+        };
+        /*
+         *
+         *
+         */
+        this.setPosition = function(x, y) {
+          this.c.position.set(x, y);
+        };
+        /*
+         *
+         *
+         */
+        this.drawShape = function(shape, width, height, color) {
+          switch (shape) {
+            case 'STAR':
+              this.g.beginFill(color);
+              this.g.drawPolygon([
+                new PIXI.Point(width / 2, 0),
+                new PIXI.Point(2 * width / 3, width / 3),
+                new PIXI.Point(width, width / 2),
+                new PIXI.Point(2 * width / 3, 2 * width / 3),
+                new PIXI.Point(width / 2, width),
+                new PIXI.Point(width / 3, 2 * width / 3),
+                new PIXI.Point(0, width / 2),
+                new PIXI.Point(width / 3, width / 3)
+              ]);
+              break;
+            case 'CIRCLE':
+              this.g.beginFill(color);
+              this.g.drawCircle(width / 2, width / 2, width/2);
+              break;
+            case 'SQUARE':
+              this.g.beginFill(color);
+              this.g.drawRect(0, 0, width, height);
+              break;
+            case 'DIAMOND':
+              this.g.beginFill(color);
+              this.g.drawPolygon([
+                new PIXI.Point(width / 2, 0),
+                new PIXI.Point(width, height / 2),
+                new PIXI.Point(width / 2, height),
+                new PIXI.Point(0, height / 2),
+              ]);
+              break;
+          }
+        };
+
+        this.setStroke = function(width, color){
+          this.g.graphicsData[0].lineWidth = width;
+          this.g.graphicsData[0].lineColor = color;
+        };
+      },
+
       /**
        * Initialize the `_renderer` and launch `_animate`.
        *
@@ -234,7 +306,7 @@
             }
             // Resize the entire _renderer
             this._renderer.resize(this._renderer.view.width, this._renderer.view.height);
-          }.bind(this, evt), 500);
+          }.bind(this, evt), 100);
         }
       },
 
@@ -291,6 +363,25 @@
        */
       createContainer: function() {
         return new PIXI.Container();
+      },
+
+      /**
+       * Scale an object, keeping it centered.
+       *
+       * @param {!required} graphics {Object} The object to scale.
+       *
+       * @param {!required} value {Number} The scale value.
+       *
+       * @method scaleFromCenter
+       */
+      scaleFromCenter: function(graphics, value) {
+        var currentCenter = {
+          x: graphics.position.x + graphics.width / 2,
+          y: graphics.position.y + graphics.width / 2
+        };
+        graphics.scale.x += value;
+        graphics.scale.y += value;
+        star.position.set(currentCenter.x - (graphics.width / 2), currentCenter.y - (graphics.height / 2));
       },
 
       /**
