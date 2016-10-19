@@ -270,7 +270,9 @@
        * @method _animate
        */
       _animate: function() {
-        requestAnimationFrame(this._animate.bind(this));
+        setTimeout( function(){
+          requestAnimationFrame(this._animate.bind(this));
+        }.bind(this), 33);
         // render the container
         this._renderer.render(this._stage);
       },
