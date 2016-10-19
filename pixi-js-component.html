@@ -107,6 +107,18 @@
         },
 
         /**
+         * Frame per seconds.
+         *
+         * @attribute fps
+         * @type Number
+         */
+        fps: {
+          type: Number,
+          notify: true,
+          value: 30
+        },
+
+        /**
          * The main PIXI.Renderer.
          *
          * @attribute _renderer
@@ -208,7 +220,7 @@
               break;
             case 'CIRCLE':
               this.g.beginFill(color);
-              this.g.drawCircle(width / 2, width / 2, width/2);
+              this.g.drawCircle(width / 2, width / 2, width / 2);
               break;
             case 'SQUARE':
               this.g.beginFill(color);
@@ -226,7 +238,7 @@
           }
         };
 
-        this.setStroke = function(width, color){
+        this.setStroke = function(width, color) {
           this.g.graphicsData[0].lineWidth = width;
           this.g.graphicsData[0].lineColor = color;
         };
@@ -270,9 +282,9 @@
        * @method _animate
        */
       _animate: function() {
-        setTimeout( function(){
+        setTimeout(function() {
           requestAnimationFrame(this._animate.bind(this));
-        }.bind(this), 33);
+        }.bind(this), 1000/this.fps);
         // render the container
         this._renderer.render(this._stage);
       },
