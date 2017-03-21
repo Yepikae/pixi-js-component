@@ -18,7 +18,6 @@
   "license": "https://github.com/Yepikae/pixi-js-component/LICENSE",
   "dependencies": {
     "polymer": "polymer/polymer#^1.0.0",
-    "pixi-js": "https://github.com/pixijs/pixi.js.git",
     "iron-resizable-behavior": "PolymerElements/iron-resizable-behavior"
   },
   "devDependencies": {
