@@ -40,7 +40,7 @@
         width: {
           type: Number,
           notify: true,
-          value: 500
+          value: 1000
         },
 
         /**
@@ -115,7 +115,7 @@
         fps: {
           type: Number,
           notify: true,
-          value: 30
+          value: 15
         },
 
         /**
@@ -284,7 +284,7 @@
       _animate: function() {
         setTimeout(function() {
           requestAnimationFrame(this._animate.bind(this));
-        }.bind(this), 1000/this.fps);
+        }.bind(this), Math.ceil(1000/this.fps));
         // render the container
         this._renderer.render(this._stage);
       },
