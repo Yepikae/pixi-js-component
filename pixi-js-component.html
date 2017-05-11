@@ -252,6 +252,7 @@
        * @method init
        */
       init: function(config) {
+        this.$.view.innerHTML = "";
         // If there no config, we juste set the background color.
         config = config || {
           backgroundColor: this.backgroundColor
@@ -273,7 +274,12 @@
         // create the root of the scene graph
         this.set('_stage', new PIXI.Container());
         // Animate the s*%! out of it!
+        this.set('run', true);
         this._animate();
+      },
+
+      clear: function(){
+        this.set('run', false);
       },
 
       /**
@@ -283,8 +289,9 @@
        */
       _animate: function() {
         setTimeout(function() {
-          requestAnimationFrame(this._animate.bind(this));
-        }.bind(this), Math.ceil(1000/this.fps));
+           if(this.run) requestAnimationFrame(this._animate.bind(this));
+         }.bind(this), Math.ceil(1000/this.fps)
+        );
         // render the container
         this._renderer.render(this._stage);
       },
